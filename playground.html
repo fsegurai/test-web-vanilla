@@ -17,6 +17,7 @@
   <!-- Local Styles -->
   <link rel="stylesheet" href="./styles/themes.css"/>
   <link rel="stylesheet" href="./styles/header.css"/>
+  <link rel="stylesheet" href="./styles/playground.css"/>
   <link rel="stylesheet" href="./styles/markdown.css"/>
   <link rel="stylesheet" href="./styles/toc.css"/>
   <link rel="stylesheet" href="./styles/prism-theme.css"/>
@@ -37,7 +38,8 @@
 
   <!-- Local Scripts -->
   <script type="module" defer src="./dist/header.js"></script>
-  <script type="module" defer src="./dist/index.js"></script>
+  <script type="module" defer src="./dist/playground.js"></script>
+
 </head>
 <body>
 <header class="header">
@@ -92,7 +94,13 @@
   </md-icon-button>
 </nav>
 
-<main class="main-index">
+<main class="main-playground">
+  <md-filled-text-field
+      id="md-editor"
+      class="md-editor"
+      type="textarea"
+      label="Markdown Editor">
+  </md-filled-text-field>
   <div id="md-body" class="md-body"></div>
 </main>
 
@@ -113,5 +121,6 @@
     © 2025 fsegurai. All rights reserved. May your scroll bars never jam.
   </p>
 </footer>
+
 </body>
 </html>
