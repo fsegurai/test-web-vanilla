@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@material/web": "^2.4.0",
+    "axios": "0.4.2",
     "clipboard": "^2.0.11",
     "github-slugger": "^2.0.0",
     "marked": "^16.4.1",
