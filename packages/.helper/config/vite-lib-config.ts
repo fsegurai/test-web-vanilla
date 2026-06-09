@@ -24,7 +24,7 @@ export function createLibraryConfig(options: {
 
   // Build globals object with defaults for known packages
   const defaultGlobals: Record<string, string> = {
-    '@fsegurai/scrollspy': 'Scrollspy',
+    '@fsegurai/test-package-1': 'Scrollspy',
   };
 
   // Merge provided globals with defaults, then build globals only for external dependencies

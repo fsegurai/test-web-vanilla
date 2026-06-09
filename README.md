@@ -24,7 +24,7 @@
 
 **A library for scrollspy functionality**
 
-`@fsegurai/scrollspy` is a dependency-free, lightweight scrollspy library that highlights navigation links based on
+`@fsegurai/test-package-1` is a dependency-free, lightweight scrollspy library that highlights navigation links based on
 scroll position. Perfect for documentation sites, blogs, and landing pages with sticky tables of contents.
 
 ---
@@ -72,7 +72,7 @@ scroll position. Perfect for documentation sites, blogs, and landing pages with 
 ### NPM
 
 ```bash
-npm install @fsegurai/scrollspy
+npm install @fsegurai/test-package-1
 ```
 
 ### CDN / HTML
@@ -80,7 +80,7 @@ npm install @fsegurai/scrollspy
 ```html
 
 <script type="module">
-    import ScrollSpy from '@fsegurai/scrollspy';
+    import ScrollSpy from '@fsegurai/test-package-1';
 
     const spy = new ScrollSpy('#toc');
 </script>
@@ -124,7 +124,7 @@ npm install @fsegurai/scrollspy
 ### JavaScript Example
 
 ```js
-import ScrollSpy from '@fsegurai/scrollspy';
+import ScrollSpy from '@fsegurai/test-package-1';
 
 const spy = new ScrollSpy('#toc', {
     offset: 80,
@@ -144,7 +144,7 @@ document.addEventListener('gumshoeactivate', (event) => {
 ### TypeScript Example
 
 ```ts
-import ScrollSpy, {type ScrollSpyEvent, type ScrollSpyOptions} from '@fsegurai/scrollspy';
+import ScrollSpy, {type ScrollSpyEvent, type ScrollSpyOptions} from '@fsegurai/test-package-1';
 
 const options: ScrollSpyOptions = {
     offset: 80,
@@ -280,7 +280,7 @@ The library includes full TypeScript type definitions for the custom events that
 `gumshoeactivate` is emitted by the current runtime:
 
 ```ts
-import type {ScrollSpyEvent} from '@fsegurai/scrollspy';
+import type {ScrollSpyEvent} from '@fsegurai/test-package-1';
 
 // TypeScript knows about these custom events automatically
 document.addEventListener('gumshoeactivate', (event: Event) => {
@@ -333,7 +333,7 @@ import ScrollSpy, {
     type ScrollSpyOptions,
     type ScrollSpyEvent,
     type ContentPosition
-} from '@fsegurai/scrollspy';
+} from '@fsegurai/test-package-1';
 
 // Full type safety for all options
 const options: ScrollSpyOptions = {
