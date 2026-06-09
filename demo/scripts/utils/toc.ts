@@ -1,4 +1,4 @@
-import ScrollSpy from '@fsegurai/scrollspy';
+import ScrollSpy from '@fsegurai/test-package-1';
 
 let spy: ScrollSpy;
 
