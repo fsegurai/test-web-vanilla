@@ -1,0 +1,197 @@
+name: $(BuildDefinitionName)_$(date:yyyyMMdd)$(rev:.r)
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+      - development
+      - release/*
+
+parameters:
+  - name: auto_non_prod_approve
+    displayName: |
+      Automatically approve non-production deployments.
+    type: boolean
+    default: false
+  - name: target_checkout_branch
+    displayName: |
+      Project branch to use.
+      Branch-based environment filtering is handled automatically:
+      - dev, int, cons → run on any branch
+      - prod → runs only on main/master/release/v* branches
+    type: string
+    default: $(Build.SourceBranch)
+    values:
+      - main
+      - development
+      - $(Build.SourceBranch)
+
+variables:
+  - name: SYSTEM_TEAM_PROJECT
+    value: 'Test'
+  - name: TRIGGERING_REPO
+    value: 'test-web-vanilla'
+  - name: TRIGGERING_REPO_BRANCH
+    value: ${{ parameters.target_checkout_branch }}
+
+resources:
+  repositories:
+    - repository: test-web-vanilla
+      type: git
+      name: Test/test-web-vanilla
+      ref: ${{ parameters.target_checkout_branch }}
+      trigger:
+        - main
+        - development
+    - repository: nodejs
+      type: git
+      name: Templates/toolslang_scm_nodejsPipelineTemplates
+      ref: development/fsi/v3
+
+extends:
+  template: /parents/nodejs-pipeline.yml@nodejs
+  parameters:
+    valid_approver_groups:
+      - Ppl-ARQ
+
+    # ---------- BUILD ----------
+    build_configuration:
+      doppler:
+        ensure_environment_variables: true
+        scripts:
+          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
+      root_scripts:
+        - command: build:packages:doppler
+      variable_groups:
+        - doppler-secrets
+
+    # ---------- SECURITY ----------
+    security_configuration:
+      doppler:
+        scripts:
+          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
+      variable_groups:
+        - doppler-secrets
+
+    # ---------- TEST ----------
+    test_configuration:
+      doppler:
+        ensure_environment_variables: true
+        scripts:
+          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_unit_tests"'
+      root_test_scripts:
+        - command: test:packages
+        - command: test:coverage
+        - command: lint
+      #        - command: test-cover:packages # Coverage generates files required for ADO Code Coverage reporting
+      coverage_configuration:
+        enabled: true
+      variable_groups:
+        - doppler-secrets
+
+    # ---------- DEPLOYMENT ----------
+    deployment_resources:
+      - type: library
+        id: spy_lib_release
+        #        skip_on_pr: true
+        doppler:
+          scripts:
+            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_lib"'
+        packages:
+          - scrollspy
+        registries:
+          - key: ado
+          - key: github
+            always_auth: true
+          - key: gitlab
+            always_auth: true
+          - key: npm
+            always_auth: true
+
+      - type: demo
+        id: spy_demo_release
+        #        skip_on_pr: true
+        depends_on_projects:
+          - type: library
+            id: spy_lib_release
+        doppler:
+          scripts:
+            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_demo"'
+        root_scripts:
+          - command: build:demo:doppler
+        publishers:
+          - key: github
+            rebuild_required: true
+          - key: gitlab
+            rebuild_required: true
+        variables:
+          disable_package_path_detection: true
+
+      - type: mirror
+        id: spy_mirror_release
+        depends_on_projects:
+          - type: library
+            id: spy_lib_release
+          - type: demo
+            id: spy_demo_release
+        doppler:
+          scripts:
+            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_mirror"'
+        project_description: >
+          Test project ONLY. Do not use.
+        project_topics:
+          - accessibility
+          - framework-agnostic
+          - javascript
+          - javascript-library
+          - lightweight
+          - library
+          - navigation
+          - scrollspy
+          - scroll
+          - table-of-contents
+          - toc
+          - typescript
+          - typescript-library
+        providers:
+          - key: github
+            repository:
+              mirror_mode: full
+              push_mode: incremental
+              mirror_branch: main
+            metadata:
+              is_project_private: false
+          - key: gitlab
+            repository:
+              mirror_mode: full
+              push_mode: incremental
+              mirror_branch: main
+            metadata:
+              is_project_private: true
+
+    environments:
+      - name: dev
+        is_prod: false
+        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
+        variable_groups:
+          - doppler-secrets
+
+      - name: int
+        is_prod: false
+        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
+        variable_groups:
+          - doppler-secrets
+
+      - name: cons
+        is_prod: false
+        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
+        variable_groups:
+          - doppler-secrets
+
+      - name: prod
+        is_prod: true
+        automatic_deploy: false
+        variable_groups:
+          - doppler-secrets
