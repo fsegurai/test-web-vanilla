@@ -151,18 +151,6 @@ extends:
         variable_groups:
           - doppler-secrets
 
-      - name: int
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
-
-      - name: cons
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
-
       - name: prod
         is_prod: true
         automatic_deploy: false
