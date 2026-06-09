@@ -15,36 +15,9 @@ parameters:
       Automatically approve non-production deployments.
     type: boolean
     default: false
-  - name: target_checkout_branch
-    displayName: |
-      Project branch to use.
-      Branch-based environment filtering is handled automatically:
-      - dev, int, cons → run on any branch
-      - prod → runs only on main/master/release/v* branches
-    type: string
-    default: $(Build.SourceBranch)
-    values:
-      - main
-      - development
-      - $(Build.SourceBranch)
-
-variables:
-  - name: SYSTEM_TEAM_PROJECT
-    value: 'Test'
-  - name: TRIGGERING_REPO
-    value: 'test-web-vanilla'
-  - name: TRIGGERING_REPO_BRANCH
-    value: ${{ parameters.target_checkout_branch }}
 
 resources:
   repositories:
-    - repository: test-web-vanilla
-      type: git
-      name: Test/test-web-vanilla
-      ref: ${{ parameters.target_checkout_branch }}
-      trigger:
-        - main
-        - development
     - repository: nodejs
       type: git
       name: Templates/toolslang_scm_nodejsPipelineTemplates
@@ -173,18 +146,6 @@ extends:
 
     environments:
       - name: dev
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
-
-      - name: int
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
-
-      - name: cons
         is_prod: false
         automatic_deploy: ${{ parameters.auto_non_prod_approve }}
         variable_groups:
