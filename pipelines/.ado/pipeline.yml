@@ -58,13 +58,6 @@ parameters:
 
 resources:
   repositories:
-    - repository: test-web-vanilla
-      type: git
-      name: Test/test-web-vanilla
-      ref: ${{ parameters.target_checkout_branch }}
-      trigger:
-        - main
-        - development
     - repository: nodejs
       type: git
       name: Templates/toolslang_scm_nodejsPipelineTemplates
