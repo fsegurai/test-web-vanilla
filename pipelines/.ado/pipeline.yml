@@ -1,6 +1,9 @@
 name: $(BuildDefinitionName)_$(date:yyyyMMdd)$(rev:.r)
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - development
 
 pr:
   branches:
@@ -27,14 +30,31 @@ parameters:
       - main
       - development
       - $(Build.SourceBranch)
+  - name: action
+    displayName: 'Infrastructure action'
+    type: string
+    default: 'deploy'
+    values:
+      - deploy
+      - destroy
 
-variables:
-  - name: SYSTEM_TEAM_PROJECT
-    value: 'Test'
-  - name: TRIGGERING_REPO
-    value: 'test-web-vanilla'
-  - name: TRIGGERING_REPO_BRANCH
-    value: ${{ parameters.target_checkout_branch }}
+  - name: target_environment
+    displayName: 'Target environment (required when action = destroy)'
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - int
+      - cons
+      - prod
+
+#variables:
+#  - name: SYSTEM_TEAM_PROJECT
+#    value: 'Test'
+#  - name: TRIGGERING_REPO
+#    value: 'test-web-vanilla'
+#  - name: TRIGGERING_REPO_BRANCH
+#    value: ${{ parameters.target_checkout_branch }}
 
 resources:
   repositories:
@@ -55,6 +75,45 @@ extends:
   parameters:
     valid_approver_groups:
       - Ppl-ARQ
+
+    pipeline_stages: 'infrastructure, build, security, test, deploy'
+    infra_action: '${{ parameters.action }}'
+    infra_target_environment: ${{ parameters.target_environment }}
+
+    # Each deploy stage runs its own Build_<env> job (artifact: build_artifact_<env>,
+    # auto-downloaded by that env's deployment jobs). The global Build stage still
+    # runs to feed Tests and Scan_Code, so the project builds once globally plus
+    # once per environment.
+    #    per_environment_build: true
+
+    # ---------- INFRASTRUCTURE ----------
+    infrastructure_configuration:
+      provider: terraform
+      modes: 'plan,apply'
+      working_directory: $(Build.SourcesDirectory)/infrastructure/ado
+
+      # Shared defaults — each environment may override via its infrastructure sub-block
+      service_connection: ado_terraform_azure
+      service_connection_id: 'c8e82117-8137-4255-b7d2-1cdcb2714411'
+      azure_subscription: '49c24883-cf88-423d-a12d-02de93e739ba'
+
+      terraform:
+        backend_config:
+          resource_group_name: Infrastructure
+          storage_account_name: pipelinereleases
+          container_name: terraform
+          # key is provided per environment via environment.infrastructure.backend_key
+
+      # Shared mapping — variable NAMES are identical across envs; VALUES differ per Doppler config
+      terraform_doppler_vars:
+        ado_org_url: AZDO_ORG_SERVICE_URL
+        ado_pat: AZDO_PERSONAL_ACCESS_TOKEN
+        project_name: PROJECT_NAME
+
+      # Fallback — only used if Doppler does not provide VARIABLE_GROUP_MAPPING
+      variable_group_secret_mapping:
+        EMAIL: COMMIT_EMAIL
+        USERNAME: COMMIT_USERNAME
 
     # ---------- BUILD ----------
     build_configuration:
@@ -171,27 +230,45 @@ extends:
             metadata:
               is_project_private: true
 
+    # Per-env build_configuration is read by the Build_<env> job of each deploy
+    # stage. doppler, root_scripts, and build_step_list fall back field-by-field
+    # to the global build_configuration, so each env only overrides what it needs
+    # (here: an env-specific Doppler config for the build secrets).
     environments:
       - name: dev
         is_prod: false
         automatic_deploy: ${{ parameters.auto_non_prod_approve }}
         variable_groups:
           - doppler-secrets
-
-      - name: int
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
-
-      - name: cons
-        is_prod: false
-        automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
+        build_configuration:
+          doppler:
+            ensure_environment_variables: true
+            scripts:
+              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
+          variable_groups:
+            - doppler-secrets
+        infrastructure:
+          backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
+          doppler:
+            ensure_environment_variables: true
+            scripts:
+              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_infra"'
 
       - name: prod
         is_prod: true
         automatic_deploy: false
         variable_groups:
           - doppler-secrets
+        build_configuration:
+          doppler:
+            ensure_environment_variables: true
+            scripts:
+              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build_prod"'
+          variable_groups:
+            - doppler-secrets
+        infrastructure:
+          backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
+          doppler:
+            ensure_environment_variables: true
+            scripts:
+              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_infra_prod"'
