@@ -83,7 +83,7 @@ extends:
     infrastructure_configuration:
       provider: terraform
       modes: 'plan,apply'
-      working_directory: $(Build.SourcesDirectory)/infrastructure/ado
+      working_directory: $(Build.SourcesDirectory)/pipelines/infrastructure/ado
 
       # Shared defaults — each environment may override via its infrastructure sub-block
       service_connection: ado_terraform_azure
@@ -119,14 +119,6 @@ extends:
       variable_groups:
         - doppler-secrets
 
-    # ---------- SECURITY ----------
-    security_configuration:
-      doppler:
-        scripts:
-          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
-      variable_groups:
-        - doppler-secrets
-
     # ---------- TEST ----------
     test_configuration:
       doppler:
@@ -140,6 +132,14 @@ extends:
       #        - command: test-cover:packages # Coverage generates files required for ADO Code Coverage reporting
       coverage_configuration:
         enabled: true
+      variable_groups:
+        - doppler-secrets
+
+    # ---------- SECURITY ----------
+    security_configuration:
+      doppler:
+        scripts:
+          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
       variable_groups:
         - doppler-secrets
 
