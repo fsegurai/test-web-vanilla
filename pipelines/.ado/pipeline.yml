@@ -127,9 +127,8 @@ extends:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_unit_tests"'
       root_test_scripts:
         - command: test:packages
-        - command: test:coverage
+        - command: test:coverage # Coverage generates files required for ADO Code Coverage reporting
         - command: lint
-      #        - command: test-cover:packages # Coverage generates files required for ADO Code Coverage reporting
       coverage_configuration:
         enabled: true
       variable_groups:
