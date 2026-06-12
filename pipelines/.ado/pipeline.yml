@@ -66,6 +66,8 @@ resources:
 extends:
   template: /parents/nodejs-pipeline.yml@nodejs
   parameters:
+    shared_variable_groups:
+      - doppler-secrets
     valid_approver_groups:
       - Ppl-ARQ
 
@@ -111,18 +113,16 @@ extends:
     # ---------- BUILD ----------
     build_configuration:
       doppler:
-        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
       root_scripts:
         - command: build:packages:doppler
-      variable_groups:
-        - doppler-secrets
+    #      variable_groups:
+    #        - doppler-secrets
 
     # ---------- TEST ----------
     test_configuration:
       doppler:
-        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_unit_tests"'
       root_test_scripts:
@@ -131,22 +131,21 @@ extends:
         - command: lint
       coverage_configuration:
         enabled: true
-      variable_groups:
-        - doppler-secrets
+    #      variable_groups:
+    #        - doppler-secrets
 
     # ---------- SECURITY ----------
     security_configuration:
       doppler:
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
-      variable_groups:
-        - doppler-secrets
+    #      variable_groups:
+    #        - doppler-secrets
 
     # ---------- DEPLOYMENT ----------
     deployment_resources:
       - type: library
         id: spy_lib_release
-        #        skip_on_pr: true
         doppler:
           scripts:
             - command: '-p "scm_lib_nodejs_pipelines" -c "tst_lib"'
@@ -163,7 +162,6 @@ extends:
 
       - type: demo
         id: spy_demo_release
-        #        skip_on_pr: true
         depends_on_projects:
           - type: library
             id: spy_lib_release
@@ -230,15 +228,15 @@ extends:
       - name: dev
         is_prod: false
         automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        variable_groups:
-          - doppler-secrets
+        #        variable_groups:
+        #          - doppler-secrets
         build_configuration:
           doppler:
             ensure_environment_variables: true
             scripts:
               - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
-          variable_groups:
-            - doppler-secrets
+        #          variable_groups:
+        #            - doppler-secrets
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
           doppler:
@@ -249,15 +247,15 @@ extends:
       - name: prod
         is_prod: true
         automatic_deploy: false
-        variable_groups:
-          - doppler-secrets
+        #        variable_groups:
+        #          - doppler-secrets
         build_configuration:
           doppler:
             ensure_environment_variables: true
             scripts:
               - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build_prod"'
-          variable_groups:
-            - doppler-secrets
+        #          variable_groups:
+        #            - doppler-secrets
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
           doppler:
