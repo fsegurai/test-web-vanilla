@@ -18,6 +18,7 @@ parameters:
       Automatically approve non-production deployments.
     type: boolean
     default: false
+
   - name: target_checkout_branch
     displayName: |
       Project branch to use.
@@ -30,6 +31,7 @@ parameters:
       - main
       - development
       - $(Build.SourceBranch)
+
   - name: action
     displayName: 'Infrastructure action'
     type: string
