@@ -48,14 +48,6 @@ parameters:
       - cons
       - prod
 
-#variables:
-#  - name: SYSTEM_TEAM_PROJECT
-#    value: 'Test'
-#  - name: TRIGGERING_REPO
-#    value: 'test-web-vanilla'
-#  - name: TRIGGERING_REPO_BRANCH
-#    value: ${{ parameters.target_checkout_branch }}
-
 resources:
   repositories:
     - repository: nodejs
