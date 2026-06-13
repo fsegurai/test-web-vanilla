@@ -95,13 +95,10 @@ extends:
     # ---------- BUILD ----------
     build_configuration:
       doppler:
-        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
       root_scripts:
         - command: build:packages:doppler
-      variable_groups:
-        - doppler-secrets
 
     # ---------- TEST ----------
     test_configuration:
@@ -115,8 +112,6 @@ extends:
         - command: lint
       coverage_configuration:
         enabled: true
-      variable_groups:
-        - doppler-secrets
 
     # ---------- SECURITY ----------
     security_configuration:
@@ -124,15 +119,11 @@ extends:
         ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
-      variable_groups:
-        - doppler-secrets
-
 
     # ---------- DEPLOYMENT ----------
     deployment_resources:
       - type: library
         id: spy_lib_release
-        skip_on_pr: true # Optional, default: false
         doppler:
           scripts:
             - command: '-p "scm_lib_nodejs_pipelines" -c "tst_lib"'
@@ -149,7 +140,6 @@ extends:
 
       - type: demo
         id: spy_demo_release
-        skip_on_pr: true # Optional, default: false
         depends_on_projects:
           - type: library
             id: spy_lib_release
