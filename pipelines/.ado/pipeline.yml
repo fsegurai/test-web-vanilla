@@ -81,65 +81,58 @@ extends:
       modes: 'plan,apply'
       working_directory: $(Build.SourcesDirectory)/pipelines/infrastructure/ado
 
-      # Shared defaults — each environment may override via its infrastructure sub-block
-      service_connection: ado_terraform_azure
-      service_connection_id: 'c8e82117-8137-4255-b7d2-1cdcb2714411'
-      azure_subscription: '49c24883-cf88-423d-a12d-02de93e739ba'
-
-      terraform:
-        backend_config:
-          resource_group_name: Infrastructure
-          storage_account_name: pipelinereleases
-          container_name: terraform
-          # key is provided per environment via environment.infrastructure.backend_key
-
       # Shared mapping — variable NAMES are identical across envs; VALUES differ per Doppler config
-      terraform_doppler_vars:
+      variables_mapping: # terraform_doppler_vars:
         ado_org_url: AZDO_ORG_SERVICE_URL
         ado_pat: AZDO_PERSONAL_ACCESS_TOKEN
         project_name: PROJECT_NAME
 
       # Fallback — only used if Doppler does not provide VARIABLE_GROUP_MAPPING
-      variable_group_secret_mapping:
+      secret_variables_mapping: # variable_group_secret_mapping:
         EMAIL: COMMIT_EMAIL
         USERNAME: COMMIT_USERNAME
 
     # ---------- BUILD ----------
     build_configuration:
       doppler:
+        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
       root_scripts:
         - command: build:packages:doppler
-    #      variable_groups:
-    #        - doppler-secrets
+      variable_groups:
+        - doppler-secrets
 
     # ---------- TEST ----------
     test_configuration:
       doppler:
+        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_unit_tests"'
       root_test_scripts:
         - command: test:packages
-        - command: test:coverage # Coverage generates files required for ADO Code Coverage reporting
+        - command: test:coverage
         - command: lint
       coverage_configuration:
         enabled: true
-    #      variable_groups:
-    #        - doppler-secrets
+      variable_groups:
+        - doppler-secrets
 
     # ---------- SECURITY ----------
     security_configuration:
       doppler:
+        ensure_environment_variables: true
         scripts:
           - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
-    #      variable_groups:
-    #        - doppler-secrets
+      variable_groups:
+        - doppler-secrets
+
 
     # ---------- DEPLOYMENT ----------
     deployment_resources:
       - type: library
         id: spy_lib_release
+        skip_on_pr: true # Optional, default: false
         doppler:
           scripts:
             - command: '-p "scm_lib_nodejs_pipelines" -c "tst_lib"'
@@ -156,6 +149,7 @@ extends:
 
       - type: demo
         id: spy_demo_release
+        skip_on_pr: true # Optional, default: false
         depends_on_projects:
           - type: library
             id: spy_lib_release
@@ -185,19 +179,9 @@ extends:
         project_description: >
           Test project ONLY. Do not use.
         project_topics:
-          - accessibility
-          - framework-agnostic
-          - javascript
-          - javascript-library
-          - lightweight
-          - library
-          - navigation
-          - scrollspy
-          - scroll
-          - table-of-contents
-          - toc
-          - typescript
-          - typescript-library
+          - Test
+          - Demo
+          - DoNotUse
         providers:
           - key: github
             repository:
@@ -222,15 +206,11 @@ extends:
       - name: dev
         is_prod: false
         automatic_deploy: ${{ parameters.auto_non_prod_approve }}
-        #        variable_groups:
-        #          - doppler-secrets
         build_configuration:
           doppler:
             ensure_environment_variables: true
             scripts:
               - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
-        #          variable_groups:
-        #            - doppler-secrets
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
           doppler:
@@ -241,15 +221,11 @@ extends:
       - name: prod
         is_prod: true
         automatic_deploy: false
-        #        variable_groups:
-        #          - doppler-secrets
         build_configuration:
           doppler:
             ensure_environment_variables: true
             scripts:
               - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build_prod"'
-        #          variable_groups:
-        #            - doppler-secrets
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
           doppler:
