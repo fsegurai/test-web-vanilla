@@ -63,7 +63,7 @@ resources:
     - repository: nodejs
       type: git
       name: Templates/toolslang_scm_nodejsPipelineTemplates
-      ref: development/fsi/v3
+      ref: release/v3
 
 extends:
   template: /parents/nodejs-pipeline.yml@nodejs
