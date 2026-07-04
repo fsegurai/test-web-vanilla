@@ -50,6 +50,14 @@ parameters:
       - cons
       - prod
 
+variables:
+  # Doppler project — declared once here; commands only carry `-c "<config>"`.
+  # Doppler CLI reads DOPPLER_PROJECT from env when `-p` is omitted (flags still override it).
+  - name: DOPPLER_PROJECT
+    value: 'scm_lib_nodejs_pipelines'
+  - name: DISPLAY_ENV_VARS
+    value: 'false'
+
 resources:
   repositories:
     - repository: nodejs
@@ -65,9 +73,10 @@ extends:
     valid_approver_groups:
       - Ppl-ARQ
 
-    pipeline_stages: 'infrastructure, build, security, test, deploy'
-    infra_action: '${{ parameters.action }}'
-    infra_target_environment: ${{ parameters.target_environment }}
+#    pipeline_stages: 'infrastructure, build, security, test, deploy'
+    pipeline_stages: 'build, security, test, deploy'
+#    infra_action: '${{ parameters.action }}'
+#    infra_target_environment: ${{ parameters.target_environment }}
 
     # Each deploy stage runs its own Build_<env> job (artifact: build_artifact_<env>,
     # auto-downloaded by that env's deployment jobs). The global Build stage still
@@ -76,36 +85,37 @@ extends:
     #    per_environment_build: true
 
     # ---------- INFRASTRUCTURE ----------
-    infrastructure_configuration:
-      provider: terraform
-      modes: 'plan,apply'
-      working_directory: $(Build.SourcesDirectory)/pipelines/infrastructure/ado
-
-      # Shared mapping — variable NAMES are identical across envs; VALUES differ per Doppler config
-      variables_mapping: # terraform_doppler_vars:
-        ado_org_url: AZDO_ORG_SERVICE_URL
-        ado_pat: AZDO_PERSONAL_ACCESS_TOKEN
-        project_name: PROJECT_NAME
-
-      # Fallback — only used if Doppler does not provide VARIABLE_GROUP_MAPPING
-      secret_variables_mapping: # variable_group_secret_mapping:
-        EMAIL: COMMIT_EMAIL
-        USERNAME: COMMIT_USERNAME
+#    infrastructure_configuration:
+#      provider: terraform
+#      modes: 'plan,apply'
+#      working_directory: $(Build.SourcesDirectory)/pipelines/infrastructure/ado
+#
+#      # Shared mapping — variable NAMES are identical across envs; VALUES differ per Doppler config
+#      variables_mapping: # terraform_doppler_vars:
+#        ado_org_url: AZDO_ORG_SERVICE_URL
+#        ado_pat: AZDO_PERSONAL_ACCESS_TOKEN
+#        project_name: PROJECT_NAME
+#
+#      # Fallback — only used if Doppler does not provide VARIABLE_GROUP_MAPPING
+#      secret_variables_mapping: # variable_group_secret_mapping:
+#        EMAIL: COMMIT_EMAIL
+#        USERNAME: COMMIT_USERNAME
 
     # ---------- BUILD ----------
     build_configuration:
       doppler:
         scripts:
-          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
+#          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
+          - command: '-c "tst_build"'
       root_scripts:
         - command: build:packages:doppler
 
     # ---------- TEST ----------
     test_configuration:
       doppler:
-        ensure_environment_variables: true
+        ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
         scripts:
-          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_unit_tests"'
+          - command: -c "tst_unit_tests"'
       root_test_scripts:
         - command: test:packages
         - command: test:coverage
@@ -116,9 +126,9 @@ extends:
     # ---------- SECURITY ----------
     security_configuration:
       doppler:
-        ensure_environment_variables: true
+        ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
         scripts:
-          - command: '-p "scm_lib_nodejs_pipelines" -c "tst_security"'
+          - command: -c "tst_security"'
 
     # ---------- DEPLOYMENT ----------
     deployment_resources:
@@ -126,7 +136,7 @@ extends:
         id: spy_lib_release
         doppler:
           scripts:
-            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_lib"'
+            - command: -c "tst_lib"'
         packages:
           - scrollspy
         registries:
@@ -145,7 +155,7 @@ extends:
             id: spy_lib_release
         doppler:
           scripts:
-            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_demo"'
+            - command: -c "tst_demo"'
         root_scripts:
           - command: build:demo:doppler
         publishers:
@@ -165,7 +175,7 @@ extends:
             id: spy_demo_release
         doppler:
           scripts:
-            - command: '-p "scm_lib_nodejs_pipelines" -c "tst_mirror"'
+            - command: -c "tst_mirror"'
         project_description: >
           Test project ONLY. Do not use.
         project_topics:
@@ -198,27 +208,27 @@ extends:
         automatic_deploy: ${{ parameters.auto_non_prod_approve }}
         build_configuration:
           doppler:
-            ensure_environment_variables: true
+            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
-              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build"'
+              - command: -c "tst_build"'
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
           doppler:
-            ensure_environment_variables: true
+            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
-              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_infra"'
+              - command: -c "tst_infra"'
 
       - name: prod
         is_prod: true
         automatic_deploy: false
         build_configuration:
           doppler:
-            ensure_environment_variables: true
+            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
-              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_build_prod"'
+              - command: -c "tst_build_prod"'
         infrastructure:
           backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
           doppler:
-            ensure_environment_variables: true
+            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
-              - command: '-p "scm_lib_nodejs_pipelines" -c "tst_infra_prod"'
+              - command: -c "tst_infra_prod"'
