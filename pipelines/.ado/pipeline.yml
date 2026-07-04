@@ -211,12 +211,12 @@ extends:
             ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
               - command: -c "tst_build"'
-        infrastructure:
-          backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
-          doppler:
-            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
-            scripts:
-              - command: -c "tst_infra"'
+#        infrastructure:
+#          backend_key: toolslang_scm_resourceTemplates/ado/dev/terraform.tfstate
+#          doppler:
+#            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
+#            scripts:
+#              - command: -c "tst_infra"'
 
       - name: prod
         is_prod: true
@@ -226,9 +226,9 @@ extends:
             ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
             scripts:
               - command: -c "tst_build_prod"'
-        infrastructure:
-          backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
-          doppler:
-            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
-            scripts:
-              - command: -c "tst_infra_prod"'
+#        infrastructure:
+#          backend_key: toolslang_scm_resourceTemplates/ado/prod/terraform.tfstate
+#          doppler:
+#            ensure_environment_variables: ${{ variables.DISPLAY_ENV_VARS }}
+#            scripts:
+#              - command: -c "tst_infra_prod"'
