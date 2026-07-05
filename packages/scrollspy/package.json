@@ -1,0 +1,46 @@
+{
+  "name": "@fsegurai/test-package-1",
+  "version": "1.0.1-alpha.lib.19",
+  "description": "A simple, framework-agnostic Scrollspy script for navigation and table of contents.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.esm.js",
+  "browser": "./dist/index.umd.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "accessibility",
+    "framework-agnostic",
+    "javascript",
+    "javascript-library",
+    "lightweight",
+    "library",
+    "navigation",
+    "scrollspy",
+    "scroll",
+    "table-of-contents",
+    "toc",
+    "typescript",
+    "typescript-library"
+  ],
+  "author": {
+    "name": "Fabián Segura",
+    "url": "https://www.fsegurai.com/"
+  },
+  "license": "MIT",
+  "scripts": {
+    "pkg:build": "vite build",
+    "pkg:test": "bun test",
+    "pkg:test:coverage": "bun test --coverage"
+  },
+  "peerDependencies": {}
+}
